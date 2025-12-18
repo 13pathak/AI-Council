@@ -2,7 +2,8 @@
 
 A powerful Chrome extension that provides a unified split-screen interface to interact with multiple AI chatbots simultaneously.
 
-![AI Council](icons/icon128.png)
+<img width="1921" height="935" alt="image" src="https://github.com/user-attachments/assets/7e074077-c36e-4094-8e43-d07262cd92a9" />
+
 
 ## Features
 
