@@ -1,0 +1,23 @@
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Editor directories and files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Node modules (if any future build step)
+node_modules/
+
+# Logs
+*.log
+
+# Packed extension
+*.zip
+*.crx
+
+# Temporary files
+*.tmp

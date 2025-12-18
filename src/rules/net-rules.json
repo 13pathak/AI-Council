@@ -1,0 +1,123 @@
+[
+    {
+        "id": 1,
+        "priority": 1,
+        "action": {
+            "type": "modifyHeaders",
+            "responseHeaders": [
+                {
+                    "header": "X-Frame-Options",
+                    "operation": "remove"
+                },
+                {
+                    "header": "Content-Security-Policy",
+                    "operation": "remove"
+                },
+                {
+                    "header": "frame-options",
+                    "operation": "remove"
+                },
+                {
+                    "header": "x-content-type-options",
+                    "operation": "remove"
+                }
+            ]
+        },
+        "condition": {
+            "requestDomains": [
+                "chatgpt.com",
+                "openai.com",
+                "claude.ai",
+                "anthropic.com",
+                "gemini.google.com",
+                "google.com",
+                "grok.com",
+                "x.ai",
+                "twitter.com",
+                "perplexity.ai",
+                "www.perplexity.ai",
+                "meta.ai",
+                "www.meta.ai",
+                "facebook.com",
+                "www.facebook.com",
+                "messenger.com",
+                "deepseek.com",
+                "chat.deepseek.com",
+                "mistral.ai",
+                "chat.mistral.ai",
+                "copilot.microsoft.com",
+                "bing.com",
+                "microsoft.com"
+            ],
+            "resourceTypes": [
+                "sub_frame",
+                "main_frame",
+                "xmlhttprequest"
+            ]
+        }
+    },
+    {
+        "id": 2,
+        "priority": 1,
+        "action": {
+            "type": "modifyHeaders",
+            "requestHeaders": [
+                {
+                    "header": "Sec-Fetch-Dest",
+                    "operation": "set",
+                    "value": "document"
+                },
+                {
+                    "header": "Sec-Fetch-Site",
+                    "operation": "set",
+                    "value": "same-origin"
+                },
+                {
+                    "header": "Referer",
+                    "operation": "set",
+                    "value": "https://www.meta.ai/"
+                },
+                {
+                    "header": "Origin",
+                    "operation": "set",
+                    "value": "https://www.meta.ai"
+                }
+            ]
+        },
+        "condition": {
+            "requestDomains": [
+                "meta.ai",
+                "www.meta.ai",
+                "facebook.com",
+                "messenger.com"
+            ],
+            "resourceTypes": [
+                "sub_frame",
+                "xmlhttprequest"
+            ]
+        }
+    },
+    {
+        "id": 3,
+        "priority": 1,
+        "action": {
+            "type": "modifyHeaders",
+            "requestHeaders": [
+                {
+                    "header": "Sec-Fetch-Dest",
+                    "operation": "set",
+                    "value": "document"
+                }
+            ]
+        },
+        "condition": {
+            "requestDomains": [
+                "perplexity.ai",
+                "www.perplexity.ai"
+            ],
+            "resourceTypes": [
+                "sub_frame"
+            ]
+        }
+    }
+]

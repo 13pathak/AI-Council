@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Council - Settings</title>
+    <style>
+        body {
+            font-family: -apple-system, system-ui, sans-serif;
+            background: #1e1e1e;
+            color: #fff;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        h2 {
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+
+        .slot-group {
+            margin-bottom: 20px;
+            background: #252526;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #ccc;
+        }
+
+        select {
+            width: 100%;
+            padding: 8px;
+            background: #3c3c3c;
+            border: 1px solid #555;
+            color: #fff;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
+        button {
+            background: #0078d4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background: #106ebe;
+        }
+
+        #status {
+            margin-left: 10px;
+            color: #4caf50;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Configure Bot Slots</h2>
+    <div class="slot-group">
+        <div>
+            <label for="slot1">Top Left</label>
+            <select id="slot1" class="bot-selector"></select>
+        </div>
+        <div>
+            <label for="slot2">Top Right</label>
+            <select id="slot2" class="bot-selector"></select>
+        </div>
+        <div>
+            <label for="slot3">Bottom Left</label>
+            <select id="slot3" class="bot-selector"></select>
+        </div>
+        <div>
+            <label for="slot4">Bottom Right</label>
+            <select id="slot4" class="bot-selector"></select>
+        </div>
+    </div>
+
+    <button id="save">Save Configuration</button>
+    <span id="status">Saved! Reload the app to see changes.</span>
+
+    <script src="options.js"></script>
+</body>
+
+</html>
