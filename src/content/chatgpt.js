@@ -33,27 +33,15 @@ async function typeAndSend(prompt, image) {
         }
         inputEl.dispatchEvent(new Event('input', { bubbles: true }));
 
-        // Wait for button to become enabled (it might be disabled while image is processing)
-        let attempts = 0;
-        const clickInterval = setInterval(() => {
-            attempts++;
+        // 3. Shared Submit Retry
+        retryClickSubmit(() => {
             const sendBtn = document.querySelector('[data-testid="send-button"]') ||
                 document.querySelector('button[aria-label="Send"]');
 
-            // Check enabling state more robustly
-            if (sendBtn && !sendBtn.disabled && sendBtn.getAttribute('aria-disabled') !== 'true') {
-                sendBtn.click();
-                clearInterval(clickInterval);
-            } else if (attempts > 30) {
-                // Stop trying after 15 seconds (30 * 500ms)
-                console.log('[AI Council] ChatGPT send timeout, trying Enter fallback...');
-                const enterEvent = new KeyboardEvent('keydown', {
-                    bubbles: true, cancelable: true, key: 'Enter', code: 'Enter', keyCode: 13
-                });
-                inputEl.dispatchEvent(enterEvent);
-                clearInterval(clickInterval);
-            }
-        }, 500);
+            // Return element if enabled, or just the element (util checks enabling)
+            // But util checks `!disabled`. We return the element found.
+            return sendBtn;
+        }, inputEl);
 
         monitorResponse();
     } else {

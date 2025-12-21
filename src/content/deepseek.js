@@ -34,33 +34,15 @@ async function typeAndSend(prompt, image) {
         inputEl.dispatchEvent(new Event('input', { bubbles: true }));
         inputEl.dispatchEvent(new Event('change', { bubbles: true }));
 
-        // 2. Submit
-        // 2. Submit: Smart Retry (Optimized)
-        let attempts = 0;
-        const clickInterval = setInterval(() => {
-            attempts++;
+        // 2. Submit: Shared Smart Retry
+        retryClickSubmit(() => {
             const buttons = Array.from(document.querySelectorAll('button'));
-            const sendBtn = buttons.reverse().find(b => {
-                // Look for send-like icons (svg) or labels
-                // Added text check optimization similar to Mistral fix
+            return buttons.reverse().find(b => {
                 const hasText = b.innerText && ['send', 'submit'].includes(b.innerText.toLowerCase().trim());
                 const hasIcon = b.querySelector('svg');
                 return (hasText || hasIcon) && !b.disabled;
             });
-
-            const isEnabled = sendBtn && !sendBtn.disabled && sendBtn.getAttribute('aria-disabled') !== 'true';
-
-            if (isEnabled) {
-                sendBtn.click();
-                clearInterval(clickInterval);
-            } else if (attempts > 30) { // 15 seconds
-                console.log('[AI Council] DeepSeek send timeout, trying Enter...');
-                inputEl.dispatchEvent(new KeyboardEvent('keydown', {
-                    bubbles: true, cancelable: true, key: 'Enter', code: 'Enter', keyCode: 13
-                }));
-                clearInterval(clickInterval);
-            }
-        }, 500);
+        }, inputEl);
 
         monitorResponse();
     } else {
