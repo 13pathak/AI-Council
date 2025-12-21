@@ -1,0 +1,134 @@
+{
+  "manifest_version": 3,
+  "name": "AI Council",
+  "version": "1.3",
+  "description": "Multi-AI Interface for ChatGPT, Claude, Gemini, Grok, Perplexity, Meta AI, DeepSeek, Mistral, and Copilot",
+  "permissions": [
+    "sidePanel",
+    "scripting",
+    "activeTab",
+    "storage",
+    "declarativeNetRequest",
+    "declarativeNetRequestWithHostAccess"
+  ],
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "ruleset_net_rules",
+        "enabled": true,
+        "path": "src/rules/net-rules.json"
+      }
+    ]
+  },
+  "host_permissions": [
+    "https://chatgpt.com/*",
+    "https://chat.openai.com/*",
+    "https://claude.ai/*",
+    "https://gemini.google.com/*",
+    "https://grok.com/*",
+    "https://www.perplexity.ai/*",
+    "https://www.meta.ai/*",
+    "https://*.facebook.com/*",
+    "https://*.messenger.com/*",
+    "https://chat.deepseek.com/*",
+    "https://chat.mistral.ai/*",
+    "https://copilot.microsoft.com/*",
+    "https://www.bing.com/*"
+  ],
+  "action": {
+    "default_title": "Open AI Bots Interface"
+  },
+  "background": {
+    "service_worker": "src/background/service-worker.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://chatgpt.com/*",
+        "https://chat.openai.com/*"
+      ],
+      "js": [
+        "src/content/chatgpt.js"
+      ],
+      "all_frames": true
+    },
+    {
+      "matches": [
+        "https://claude.ai/*"
+      ],
+      "js": [
+        "src/content/claude.js"
+      ],
+      "all_frames": true
+    },
+    {
+      "matches": [
+        "https://gemini.google.com/*"
+      ],
+      "js": [
+        "src/content/gemini.js"
+      ],
+      "all_frames": true
+    },
+    {
+      "matches": [
+        "https://grok.com/*"
+      ],
+      "js": [
+        "src/content/grok.js"
+      ],
+      "all_frames": true
+    },
+    {
+      "matches": [
+        "https://www.perplexity.ai/*"
+      ],
+      "js": [
+        "src/content/perplexity.js"
+      ],
+      "all_frames": true
+    },
+    {
+      "matches": [
+        "https://www.meta.ai/*"
+      ],
+      "js": [
+        "src/content/meta.js"
+      ],
+      "all_frames": true
+    },
+    {
+      "matches": [
+        "https://chat.deepseek.com/*"
+      ],
+      "js": [
+        "src/content/deepseek.js"
+      ],
+      "all_frames": true
+    },
+    {
+      "matches": [
+        "https://chat.mistral.ai/*"
+      ],
+      "js": [
+        "src/content/mistral.js"
+      ],
+      "all_frames": true
+    },
+    {
+      "matches": [
+        "https://copilot.microsoft.com/*",
+        "https://www.bing.com/chat*"
+      ],
+      "js": [
+        "src/content/copilot.js"
+      ],
+      "all_frames": true
+    }
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
