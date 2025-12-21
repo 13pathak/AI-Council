@@ -2,11 +2,11 @@ console.log('AI Bots: Copilot Script Loaded');
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === 'type_and_send') {
-        typeAndSend(message.prompt);
+        typeAndSend(message.prompt, message.image);
     }
 });
 
-function typeAndSend(prompt) {
+async function typeAndSend(prompt, image) {
     // 1. Find Input
     // Copilot inputs often have specific IDs or roles
     const inputEl = document.querySelector('#searchbox') ||
@@ -18,12 +18,19 @@ function typeAndSend(prompt) {
         inputEl.focus();
         inputEl.click();
 
+        if (image) {
+            console.log('[AI Council] Attempting paste upload for Copilot...');
+            await pasteImageToElement(inputEl, image);
+            await new Promise(r => setTimeout(r, 2000));
+        }
+
         // 2. Insert Text
         document.execCommand('insertText', false, prompt);
         inputEl.dispatchEvent(new Event('input', { bubbles: true }));
 
         // 3. The "Nudge" (React Wake-Up)
         // Type a space and delete it to force the "Submit" button to enable
+        // 3. The "Nudge" (React Wake-Up)
         setTimeout(() => {
             document.execCommand('insertText', false, ' ');
             inputEl.dispatchEvent(new Event('input', { bubbles: true }));
@@ -32,36 +39,32 @@ function typeAndSend(prompt) {
                 document.execCommand('delete');
                 inputEl.dispatchEvent(new Event('input', { bubbles: true }));
 
-                // 4. Primary: Enter Key
-                const enterEvent = new KeyboardEvent('keydown', {
-                    bubbles: true, cancelable: true, key: 'Enter', code: 'Enter', keyCode: 13
-                });
-                inputEl.dispatchEvent(enterEvent);
-
-                // 5. Fallback: Click the Button using the specific DATA-TESTID
-                setTimeout(() => {
-                    // Based on your screenshot, this is the exact ID of the button
+                // 4. Submit: Wait and Retry for Button
+                let attempts = 0;
+                const clickInterval = setInterval(() => {
+                    attempts++;
                     const submitBtn = document.querySelector('button[data-testid="submit-button"]') ||
                         document.querySelector('button[aria-label="Submit message"]');
 
-                    if (submitBtn) {
+                    const isEnabled = submitBtn && !submitBtn.disabled && submitBtn.getAttribute('aria-disabled') !== 'true';
+
+                    if (isEnabled) {
                         // Sometimes the button needs a 'mousedown' before a 'click'
                         submitBtn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
                         submitBtn.click();
                         submitBtn.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
-                    } else {
-                        // Scoped backup if the global ID fails (rare)
-                        const container = inputEl.closest('div.relative') || inputEl.parentElement?.parentElement;
-                        if (container) {
-                            const iconBtn = Array.from(container.querySelectorAll('button')).find(b =>
-                                b.querySelector('svg') && !b.innerText.trim()
-                            );
-                            if (iconBtn) iconBtn.click();
-                        }
+                        clearInterval(clickInterval);
+                    } else if (attempts > 30) { // 15 seconds
+                        console.log('[AI Council] Copilot send timeout, trying Enter...');
+                        const enterEvent = new KeyboardEvent('keydown', {
+                            bubbles: true, cancelable: true, key: 'Enter', code: 'Enter', keyCode: 13
+                        });
+                        inputEl.dispatchEvent(enterEvent);
+                        clearInterval(clickInterval);
                     }
-
-                    monitorResponse();
                 }, 500);
+
+                monitorResponse();
             }, 100);
         }, 100);
     } else {

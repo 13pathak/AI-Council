@@ -44,11 +44,58 @@ document.addEventListener('DOMContentLoaded', () => {
   const sendBtn = document.getElementById('send-btn');
   const promptInput = document.getElementById('prompt-input');
 
+  // File Upload Logic
+  const fileInput = document.getElementById('file-input');
+  const attachBtn = document.getElementById('attach-btn');
+  const previewContainer = document.getElementById('preview-container');
+  const previewName = document.getElementById('preview-name');
+  const removePreviewBtn = document.getElementById('remove-preview');
+
+  let currentFile = null;
+
+  attachBtn.addEventListener('click', () => fileInput.click());
+
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files.length > 0) {
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        currentFile = {
+          name: file.name,
+          type: file.type,
+          data: e.target.result // Base64 Data URL
+        };
+        previewName.textContent = file.name;
+        previewContainer.style.display = 'flex';
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  removePreviewBtn.addEventListener('click', () => {
+    currentFile = null;
+    fileInput.value = '';
+    previewContainer.style.display = 'none';
+  });
+
   sendBtn.addEventListener('click', () => {
     const prompt = promptInput.value.trim();
-    if (!prompt) return;
+    if (!prompt && !currentFile) return;
+
+    // Reset UI immediately
     promptInput.value = '';
-    chrome.runtime.sendMessage({ action: 'broadcast_prompt', prompt: prompt });
+    const fileToSend = currentFile; // Capture current ref
+
+    // Clear attachment
+    currentFile = null;
+    fileInput.value = '';
+    previewContainer.style.display = 'none';
+
+    chrome.runtime.sendMessage({
+      action: 'broadcast_prompt',
+      prompt: prompt,
+      image: fileToSend
+    });
   });
 
   // Settings
@@ -144,18 +191,37 @@ function renderGrid(botIds) {
     header.appendChild(controls);
     wrapper.appendChild(header);
 
-    // --- Hover Logic ---
+    // --- Hover Logic (Debounced for smoothness) ---
+    let hoverTimeout;
+
     wrapper.addEventListener('mouseenter', () => {
-      // Only maximize if not already maximized (though setMaximize handles idempotency visually)
-      // and we are in grid mode
-      if (CURRENT_VIEW === 'grid') {
-        setMaximize(wrapper, maxBtn, true);
+      // Clear any pending remove
+      if (wrapper._leaveTimeout) {
+        clearTimeout(wrapper._leaveTimeout);
+        wrapper._leaveTimeout = null;
       }
+
+      // Debounce the maximize action to prevent flashing
+      hoverTimeout = setTimeout(() => {
+        if (CURRENT_VIEW === 'grid') {
+          setMaximize(wrapper, maxBtn, true);
+        }
+      }, 150); // 150ms delay for intentionality
     });
 
     wrapper.addEventListener('mouseleave', () => {
+      // Cancel maximize if it hasn't happened yet
+      if (hoverTimeout) clearTimeout(hoverTimeout);
+
       if (CURRENT_VIEW === 'grid') {
-        setMaximize(wrapper, maxBtn, false);
+        // Increased buffer to 500ms to cover the entire 0.4s animation duration.
+        // This prevents spurious mouseleave events caused by the transform:scale() gap.
+        wrapper._leaveTimeout = setTimeout(() => {
+          // CRITICAL FIX: explicit check if still hovering
+          if (!wrapper.matches(':hover')) {
+            setMaximize(wrapper, maxBtn, false);
+          }
+        }, 500);
       }
     });
 

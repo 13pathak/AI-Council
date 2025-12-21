@@ -32,7 +32,16 @@
 
     <!-- Input bar fixed at bottom -->
     <div class="input-container">
+      <input type="file" id="file-input" hidden>
+      <button id="attach-btn" title="Attach Image">📎</button>
       <button id="settings-btn" title="Configure Bots">⚙️</button>
+      <div id="preview-container"
+        style="display:none; align-items:center; gap:5px; background:#333; padding:2px 5px; border-radius:4px;">
+        <span id="preview-name"
+          style="font-size:10px; max-width:80px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;"></span>
+        <button id="remove-preview"
+          style="background:none; border:none; color:#ff6b6b; cursor:pointer; font-size:10px;">×</button>
+      </div>
       <textarea id="prompt-input" placeholder="Type a message to all bots..."></textarea>
       <button id="send-btn">Send</button>
     </div>

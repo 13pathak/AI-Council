@@ -2,17 +2,25 @@ console.log('AI Bots: Perplexity Script Loaded');
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === 'type_and_send') {
-        typeAndSend(message.prompt);
+        typeAndSend(message.prompt, message.image);
     }
 });
 
-function typeAndSend(prompt) {
+async function typeAndSend(prompt, image) {
     const inputEl = document.querySelector('[data-lexical-editor="true"]') ||
         document.querySelector('div[contenteditable="true"]');
 
     if (inputEl) {
         inputEl.focus();
         inputEl.click();
+
+        if (image) {
+            console.log('[AI Council] Attempting paste upload for Perplexity...');
+            // Perplexity is React-heavy, sometimes needs focus loop
+            await pasteImageToElement(inputEl, image);
+            // Increase wait for upload processing
+            await new Promise(r => setTimeout(r, 4000));
+        }
 
         // 1. Insert the main text
         document.execCommand('insertText', false, prompt);
@@ -45,28 +53,29 @@ function typeAndSend(prompt) {
                 inputEl.dispatchEvent(enterEvent);
             }, 200);
 
-            // 4. Fallback: Button Click (Scoped)
-            setTimeout(() => {
-                // Look for the specific 'bg-super' class which Perplexity uses for the active send button
-                // or the specific aria-label.
+            // 4. Button Click (Scoped with Retry)
+            let attempts = 0;
+            const clickInterval = setInterval(() => {
+                attempts++;
                 const sendBtn = document.querySelector('button[aria-label="Submit"]') ||
                     document.querySelector('button.bg-super');
 
-                if (sendBtn) {
-                    // Only click if it's not disabled
-                    if (!sendBtn.disabled && !sendBtn.classList.contains('opacity-50')) {
-                        sendBtn.click();
-                    } else {
-                        // If still disabled, force a click anyway (sometimes looks disabled but works)
-                        sendBtn.click();
-                    }
-                }
+                // Perplexity disables button while uploading.
+                // Check for 'opacity-50', disabled attribute, or aria-disabled
+                const isDiabled = !sendBtn || sendBtn.disabled || sendBtn.classList.contains('opacity-50');
 
-                monitorResponse();
+                if (sendBtn && !isDiabled) {
+                    sendBtn.click();
+                    clearInterval(clickInterval);
+                } else if (attempts > 15) { // 7.5 seconds timeout
+                    // Force click if we timed out, just in case
+                    if (sendBtn) sendBtn.click();
+                    clearInterval(clickInterval);
+                }
             }, 500);
 
+            monitorResponse();
         }, 100); // Small delay before the "Nudge"
-
     } else {
         console.error('Perplexity Input not found');
     }
