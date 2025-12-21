@@ -183,8 +183,8 @@ function updateTabSelector() {
 }
 
 function toggleMaximize(wrapper, btn) {
-    const isMax = wrapper.classList.contains('maximized');
-    setMaximize(wrapper, btn, !isMax);
+  const isMax = wrapper.classList.contains('maximized');
+  setMaximize(wrapper, btn, !isMax);
 }
 
 function setMaximize(wrapper, btn, shouldMaximize) {
