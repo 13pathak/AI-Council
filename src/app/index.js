@@ -53,22 +53,44 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let currentFile = null;
 
+  function handleFile(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      currentFile = {
+        name: file.name,
+        type: file.type,
+        data: e.target.result // Base64 Data URL
+      };
+      previewName.textContent = file.name;
+      previewContainer.style.display = 'flex';
+      // Reset file input value so the same file can be selected again if needed
+      if (fileInput.files[0] !== file) {
+        fileInput.value = '';
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+
   attachBtn.addEventListener('click', () => fileInput.click());
 
   fileInput.addEventListener('change', () => {
     if (fileInput.files.length > 0) {
-      const file = fileInput.files[0];
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        currentFile = {
-          name: file.name,
-          type: file.type,
-          data: e.target.result // Base64 Data URL
-        };
-        previewName.textContent = file.name;
-        previewContainer.style.display = 'flex';
-      };
-      reader.readAsDataURL(file);
+      handleFile(fileInput.files[0]);
+    }
+  });
+
+  // Paste Event Listener
+  promptInput.addEventListener('paste', (e) => {
+    const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+    for (let index in items) {
+      const item = items[index];
+      if (item.kind === 'file') {
+        const file = item.getAsFile();
+        handleFile(file);
+        e.preventDefault(); // Prevent pasting the binary data code into text area
+        return; // Handle only the first file found
+      }
     }
   });
 
