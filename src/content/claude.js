@@ -2,7 +2,9 @@ console.log('AI Bots: Claude Script Loaded');
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === 'type_and_send') {
-        typeAndSend(message.prompt, message.images);
+        chrome.storage.local.get(['pendingImages'], (result) => {
+            typeAndSend(message.prompt, result.pendingImages || []);
+        });
     }
 });
 

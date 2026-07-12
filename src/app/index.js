@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function handleFile(file) {
+  function handleSingleFile(file) {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -107,8 +107,6 @@ document.addEventListener('DOMContentLoaded', () => {
         data: e.target.result // Base64 Data URL
       });
       renderPreviews();
-      // Clear file input so same file can be uploaded again if removed
-      fileInput.value = '';
     };
     reader.readAsDataURL(file);
   }
@@ -118,7 +116,24 @@ document.addEventListener('DOMContentLoaded', () => {
   fileInput.addEventListener('change', () => {
     if (fileInput.files.length > 0) {
       const newFiles = Array.from(fileInput.files);
-      newFiles.forEach(file => handleFile(file));
+      let loadedCount = 0;
+
+      newFiles.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          currentFiles.push({
+            name: file.name,
+            type: file.type,
+            data: e.target.result
+          });
+          loadedCount++;
+          if (loadedCount === newFiles.length) {
+             renderPreviews();
+             fileInput.value = ''; // Clear after all are read
+          }
+        };
+        reader.readAsDataURL(file);
+      });
     }
   });
 
@@ -126,11 +141,11 @@ document.addEventListener('DOMContentLoaded', () => {
   promptInput.addEventListener('paste', (e) => {
     const items = (e.clipboardData || e.originalEvent.clipboardData).items;
     let pastedFiles = false;
-    for (let index in items) {
-      const item = items[index];
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
       if (item.kind === 'file') {
         const file = item.getAsFile();
-        handleFile(file);
+        handleSingleFile(file);
         pastedFiles = true;
       }
     }
@@ -151,10 +166,12 @@ document.addEventListener('DOMContentLoaded', () => {
     currentFiles = [];
     renderPreviews();
 
-    chrome.runtime.sendMessage({
-      action: 'broadcast_prompt',
-      prompt: prompt,
-      images: filesToSend
+    // Store large files in local storage to bypass sendMessage size limits
+    chrome.storage.local.set({ 'pendingImages': filesToSend }, () => {
+      chrome.runtime.sendMessage({
+        action: 'broadcast_prompt',
+        prompt: prompt
+      });
     });
   });
 
