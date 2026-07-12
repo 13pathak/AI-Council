@@ -28,11 +28,9 @@ async function typeAndSend(prompt, images) {
 
         if (images && images.length > 0) {
             console.log('[AI Council] Attempting paste upload for Meta AI (Reverted)...');
-            for (const img of images) {
-                // Revert to Paste. Drag & Drop was ignored.
-                await pasteImageToElement(inputEl, img);
-                await new Promise(r => setTimeout(r, 3000));
-            }
+            // Revert to Paste. Drag & Drop was ignored.
+            await pasteImagesToElement(inputEl, images);
+            await new Promise(r => setTimeout(r, 3000));
         }
 
         // 2. Insert Text

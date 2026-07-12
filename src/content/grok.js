@@ -19,10 +19,8 @@ async function typeAndSend(prompt, images) {
 
         if (images && images.length > 0) {
             console.log('[AI Council] Attempting paste upload for Grok...');
-            for (const img of images) {
-                await pasteImageToElement(inputEl, img);
-                await new Promise(r => setTimeout(r, 1500));
-            }
+            await pasteImagesToElement(inputEl, images);
+            await new Promise(r => setTimeout(r, 1500));
         }
 
         if (inputEl.tagName === 'TEXTAREA') {

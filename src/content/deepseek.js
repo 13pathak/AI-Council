@@ -17,11 +17,19 @@ async function typeAndSend(prompt, images) {
         inputEl.focus();
 
         if (images && images.length > 0) {
-            console.log('[AI Council] Attempting paste upload for DeepSeek...');
-            for (const img of images) {
-                await pasteImageToElement(inputEl, img);
+            console.log('[AI Council] Attempting upload for DeepSeek...');
+            const success = await uploadToHiddenInput(images);
+            if (success) {
+                console.log('[AI Council] Uploaded via hidden input.');
+                await new Promise(r => setTimeout(r, 2000));
+            } else {
+                console.log('[AI Council] No file input, trying Paste...');
+                await pasteImagesToElement(inputEl, images);
                 await new Promise(r => setTimeout(r, 2000));
             }
+        } else {
+            // Rich Text fallback
+            document.execCommand('insertText', false, prompt);
         }
 
         inputEl.click();

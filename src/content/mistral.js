@@ -21,19 +21,16 @@ async function typeAndSend(prompt, images) {
         // 1. Upload Images
         if (images && images.length > 0) {
             console.log('[AI Council] Attempting upload for Mistral...');
-
-            for (const img of images) {
-                // Try Shared Hidden Input Method First
-                const success = await uploadToHiddenInput(img);
-                if (success) {
-                    console.log('[AI Council] Uploaded via hidden input.');
-                    await new Promise(r => setTimeout(r, 2000));
-                } else {
-                    // Fallback: Paste Simulation
-                    console.log('[AI Council] No file input, trying Paste...');
-                    await pasteImageToElement(inputEl, img);
-                    await new Promise(r => setTimeout(r, 2000));
-                }
+            // Try Shared Hidden Input Method First
+            const success = await uploadToHiddenInput(images);
+            if (success) {
+                console.log('[AI Council] Uploaded via hidden input.');
+                await new Promise(r => setTimeout(r, 2000));
+            } else {
+                // Fallback: Paste Simulation
+                console.log('[AI Council] No file input, trying Paste...');
+                await pasteImagesToElement(inputEl, images);
+                await new Promise(r => setTimeout(r, 2000));
             }
         }
 

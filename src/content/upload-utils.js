@@ -34,20 +34,22 @@ async function uploadToInput(targetElement, fileData) {
 }
 
 /**
- * Simulates a paste event with the image data.
+ * Simulates a paste event with multiple files.
  */
-async function pasteImageToElement(targetElement, fileData) {
-    if (!targetElement || !fileData) return;
-
-    const res = await fetch(fileData.data);
-    const blob = await res.blob();
-    const file = new File([blob], fileData.name, {
-        type: fileData.type,
-        lastModified: new Date().getTime()
-    });
+async function pasteImagesToElement(targetElement, filesData) {
+    if (!targetElement || !filesData || filesData.length === 0) return;
 
     const dataTransfer = new DataTransfer();
-    dataTransfer.items.add(file);
+
+    for (const fileData of filesData) {
+        const res = await fetch(fileData.data);
+        const blob = await res.blob();
+        const file = new File([blob], fileData.name, {
+            type: fileData.type,
+            lastModified: new Date().getTime()
+        });
+        dataTransfer.items.add(file);
+    }
 
     const pasteEvent = new ClipboardEvent('paste', {
         bubbles: true,
@@ -56,7 +58,7 @@ async function pasteImageToElement(targetElement, fileData) {
     });
 
     targetElement.dispatchEvent(pasteEvent);
-    console.log(`[AI Council] Dispatched paste event for ${fileData.name}`);
+    console.log(`[AI Council] Dispatched batch paste event for ${filesData.length} files`);
 }
 
 /**
@@ -99,24 +101,28 @@ function retryClickSubmit(buttonFinder, fallbackInput, timeoutMs = 15000) {
 }
 
 /**
- * Searches for a hidden file input (often used by 'Attach' buttons) and assigns the file directly.
- * @param {Object} fileData - { name, type, data }
+ * Searches for a hidden file input (often used by 'Attach' buttons) and assigns the files directly.
+ * @param {Array} filesData - Array of { name, type, data }
  * @returns {Promise<boolean>} - True if successful, False if input not found.
  */
-async function uploadToHiddenInput(fileData) {
+async function uploadToHiddenInput(filesData) {
+    if (!filesData || filesData.length === 0) return false;
     const fileInput = document.querySelector('input[type="file"]');
     if (!fileInput) return false;
 
     try {
-        const res = await fetch(fileData.data);
-        const blob = await res.blob();
-        const file = new File([blob], fileData.name, {
-            type: fileData.type,
-            lastModified: new Date().getTime()
-        });
-
         const dataTransfer = new DataTransfer();
-        dataTransfer.items.add(file);
+        
+        for (const fileData of filesData) {
+            const res = await fetch(fileData.data);
+            const blob = await res.blob();
+            const file = new File([blob], fileData.name, {
+                type: fileData.type,
+                lastModified: new Date().getTime()
+            });
+            dataTransfer.items.add(file);
+        }
+
         fileInput.files = dataTransfer.files;
 
         // Dispatch change events to notify framework (React/Vue often listens here)

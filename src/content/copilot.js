@@ -22,10 +22,8 @@ async function typeAndSend(prompt, images) {
 
         if (images && images.length > 0) {
             console.log('[AI Council] Attempting paste upload for Copilot...');
-            for (const img of images) {
-                await pasteImageToElement(inputEl, img);
-                await new Promise(r => setTimeout(r, 2000));
-            }
+            await pasteImagesToElement(inputEl, images);
+            await new Promise(r => setTimeout(r, 2000));
         }
 
         // 2. Insert Text

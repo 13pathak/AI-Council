@@ -20,11 +20,9 @@ async function typeAndSend(prompt, images) {
         // 1. Upload Images (if any)
         if (images && images.length > 0) {
             console.log('[AI Council] Attempting paste upload...');
-            for (const img of images) {
-                await pasteImageToElement(inputEl, img);
-                // Wait a moment for upload to process (not perfect, but necessary)
-                await new Promise(r => setTimeout(r, 2000));
-            }
+            await pasteImagesToElement(inputEl, images);
+            // Wait a moment for upload to process (not perfect, but necessary)
+            await new Promise(r => setTimeout(r, 2000));
         }
 
         // 2. Type Prompt

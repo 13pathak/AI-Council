@@ -21,12 +21,10 @@ async function typeAndSend(prompt, images) {
         if (images && images.length > 0) {
             // Gemini supports drop on the editable area, but paste is often better
             console.log('[AI Council] Attempting paste upload for Gemini...');
-            for (const img of images) {
-                await pasteImageToElement(inputEl, img);
-                // Wait longer for image to process (large images take time)
-                // 4 seconds is safer for larger files.
-                await new Promise(r => setTimeout(r, 4000));
-            }
+            await pasteImagesToElement(inputEl, images);
+            // Wait longer for image to process (large images take time)
+            // 4 seconds is safer for larger files.
+            await new Promise(r => setTimeout(r, 4000));
         }
 
         // Gemini often puts text in a <p> or just directly in the div

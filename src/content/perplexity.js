@@ -19,11 +19,9 @@ async function typeAndSend(prompt, images) {
         if (images && images.length > 0) {
             console.log('[AI Council] Attempting paste upload for Perplexity...');
             // Perplexity is React-heavy, sometimes needs focus loop
-            for (const img of images) {
-                await pasteImageToElement(inputEl, img);
-                // Increase wait for upload processing
-                await new Promise(r => setTimeout(r, 4000));
-            }
+            await pasteImagesToElement(inputEl, images);
+            // Increase wait for upload processing
+            await new Promise(r => setTimeout(r, 4000));
         }
 
         // 1. Insert the main text

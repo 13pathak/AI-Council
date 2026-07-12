@@ -19,16 +19,9 @@ async function typeAndSend(prompt, images) {
         inputEl.focus();
 
         if (images && images.length > 0) {
-            console.log('[AI Council] Attempting paste upload for Claude (Reverted)...');
-            for (const img of images) {
-                // Revert to Paste as Drag & Drop failed. 
-                // Ensuring focus is very tight here.
-                inputEl.focus();
-                inputEl.click();
-                await pasteImageToElement(inputEl, img);
-                // Longer wait for Claude internal processing
-                await new Promise(r => setTimeout(r, 3000));
-            }
+            console.log('[AI Council] Attempting paste upload for Claude...');
+            await pasteImagesToElement(inputEl, images);
+            await new Promise(r => setTimeout(r, 2000));
         }
 
         // Use standard text insertion to avoid wiping out the pasted image
