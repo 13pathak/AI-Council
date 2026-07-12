@@ -2,11 +2,11 @@ console.log('AI Bots: DeepSeek Script Loaded');
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === 'type_and_send') {
-        typeAndSend(message.prompt, message.image);
+        typeAndSend(message.prompt, message.images);
     }
 });
 
-async function typeAndSend(prompt, image) {
+async function typeAndSend(prompt, images) {
     // DeepSeek likely uses a textarea or standard contenteditable
     const inputEl = document.querySelector('textarea') ||
         document.querySelector('div[contenteditable="true"]');
@@ -14,10 +14,12 @@ async function typeAndSend(prompt, image) {
     if (inputEl) {
         inputEl.focus();
 
-        if (image) {
+        if (images && images.length > 0) {
             console.log('[AI Council] Attempting paste upload for DeepSeek...');
-            await pasteImageToElement(inputEl, image);
-            await new Promise(r => setTimeout(r, 2000));
+            for (const img of images) {
+                await pasteImageToElement(inputEl, img);
+                await new Promise(r => setTimeout(r, 2000));
+            }
         }
 
         inputEl.click();

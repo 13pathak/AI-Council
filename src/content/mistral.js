@@ -2,11 +2,11 @@ console.log('AI Bots: Mistral Script Loaded');
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === 'type_and_send') {
-        typeAndSend(message.prompt, message.image);
+        typeAndSend(message.prompt, message.images);
     }
 });
 
-async function typeAndSend(prompt, image) {
+async function typeAndSend(prompt, images) {
     // Mistral uses ProseMirror (contenteditable div)
     // Priority selector based on user screenshot
     const inputEl = document.querySelector('.ProseMirror') ||
@@ -16,20 +16,22 @@ async function typeAndSend(prompt, image) {
         inputEl.focus();
         inputEl.click();
 
-        // 1. Upload Image
-        if (image) {
+        // 1. Upload Images
+        if (images && images.length > 0) {
             console.log('[AI Council] Attempting upload for Mistral...');
 
-            // Try Shared Hidden Input Method First
-            const success = await uploadToHiddenInput(image);
-            if (success) {
-                console.log('[AI Council] Uploaded via hidden input.');
-                await new Promise(r => setTimeout(r, 2000));
-            } else {
-                // Fallback: Paste Simulation
-                console.log('[AI Council] No file input, trying Paste...');
-                await pasteImageToElement(inputEl, image);
-                await new Promise(r => setTimeout(r, 2000));
+            for (const img of images) {
+                // Try Shared Hidden Input Method First
+                const success = await uploadToHiddenInput(img);
+                if (success) {
+                    console.log('[AI Council] Uploaded via hidden input.');
+                    await new Promise(r => setTimeout(r, 2000));
+                } else {
+                    // Fallback: Paste Simulation
+                    console.log('[AI Council] No file input, trying Paste...');
+                    await pasteImageToElement(inputEl, img);
+                    await new Promise(r => setTimeout(r, 2000));
+                }
             }
         }
 

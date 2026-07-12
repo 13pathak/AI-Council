@@ -2,38 +2,47 @@ console.log('AI Bots: Grok Script Loaded');
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === 'type_and_send') {
-        typeAndSend(message.prompt, message.image);
+        typeAndSend(message.prompt, message.images);
     }
 });
 
-async function typeAndSend(prompt, image) {
-    // Grok uses ProseMirror/Tiptap (contenteditable div)
-    const inputSelector = '.ProseMirror';
-    const inputEl = document.querySelector(inputSelector);
+async function typeAndSend(prompt, images) {
+    // Grok uses textarea or ProseMirror/Tiptap (contenteditable div)
+    const inputEl = document.querySelector('textarea') || 
+                    document.querySelector('.ProseMirror') ||
+                    document.querySelector('div[contenteditable="true"]');
 
     if (inputEl) {
         inputEl.focus();
 
-        if (image) {
+        if (images && images.length > 0) {
             console.log('[AI Council] Attempting paste upload for Grok...');
-            await pasteImageToElement(inputEl, image);
-            await new Promise(r => setTimeout(r, 1500));
+            for (const img of images) {
+                await pasteImageToElement(inputEl, img);
+                await new Promise(r => setTimeout(r, 1500));
+            }
         }
 
-        // APPROACH: Simulate clipboard paste - ProseMirror handles paste events natively
-        // This is the most reliable method for ProseMirror/Tiptap editors
+        if (inputEl.tagName === 'TEXTAREA') {
+            inputEl.value = prompt;
+            inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+        } else {
+            // APPROACH: Simulate clipboard paste - ProseMirror handles paste events natively
+            // This is the most reliable method for ProseMirror/Tiptap editors
 
-        // Create a DataTransfer object with the prompt text
-        const dataTransfer = new DataTransfer();
-        dataTransfer.setData('text/plain', prompt);
+            // Create a DataTransfer object with the prompt text
+            const dataTransfer = new DataTransfer();
+            dataTransfer.setData('text/plain', prompt);
 
-        // Create and dispatch a paste event
-        const pasteEvent = new ClipboardEvent('paste', {
-            bubbles: true,
-            cancelable: true,
-            clipboardData: dataTransfer
-        });
-        inputEl.dispatchEvent(pasteEvent);
+            // Create and dispatch a paste event
+            const pasteEvent = new ClipboardEvent('paste', {
+                bubbles: true,
+                cancelable: true,
+                clipboardData: dataTransfer
+            });
+            inputEl.dispatchEvent(pasteEvent);
+            inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+        }
 
         // Give the editor time to process the paste and enable the button
         let attempts = 0;

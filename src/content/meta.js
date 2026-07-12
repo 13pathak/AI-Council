@@ -2,11 +2,11 @@ console.log('AI Bots: Meta AI Script Loaded');
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === 'type_and_send') {
-        typeAndSend(message.prompt, message.image);
+        typeAndSend(message.prompt, message.images);
     }
 });
 
-async function typeAndSend(prompt, image) {
+async function typeAndSend(prompt, images) {
     // 1. Find the Visible Input (Hero or Footer)
     const candidates = [
         ...document.querySelectorAll('div[contenteditable="true"]'),
@@ -24,11 +24,13 @@ async function typeAndSend(prompt, image) {
         inputEl.focus();
         inputEl.click();
 
-        if (image) {
+        if (images && images.length > 0) {
             console.log('[AI Council] Attempting paste upload for Meta AI (Reverted)...');
-            // Revert to Paste. Drag & Drop was ignored.
-            await pasteImageToElement(inputEl, image);
-            await new Promise(r => setTimeout(r, 3000));
+            for (const img of images) {
+                // Revert to Paste. Drag & Drop was ignored.
+                await pasteImageToElement(inputEl, img);
+                await new Promise(r => setTimeout(r, 3000));
+            }
         }
 
         // 2. Insert Text

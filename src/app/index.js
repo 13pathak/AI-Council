@@ -48,26 +48,67 @@ document.addEventListener('DOMContentLoaded', () => {
   const fileInput = document.getElementById('file-input');
   const attachBtn = document.getElementById('attach-btn');
   const previewContainer = document.getElementById('preview-container');
-  const previewName = document.getElementById('preview-name');
-  const removePreviewBtn = document.getElementById('remove-preview');
 
-  let currentFile = null;
+  let currentFiles = [];
+
+  function renderPreviews() {
+    previewContainer.innerHTML = '';
+    if (currentFiles.length === 0) {
+      previewContainer.style.display = 'none';
+      fileInput.value = '';
+      return;
+    }
+    
+    previewContainer.style.display = 'flex';
+    currentFiles.forEach((f, index) => {
+      const badge = document.createElement('div');
+      badge.style.display = 'flex';
+      badge.style.alignItems = 'center';
+      badge.style.gap = '5px';
+      badge.style.background = '#333';
+      badge.style.padding = '2px 5px';
+      badge.style.borderRadius = '4px';
+
+      const nameSpan = document.createElement('span');
+      nameSpan.style.fontSize = '10px';
+      nameSpan.style.maxWidth = '80px';
+      nameSpan.style.overflow = 'hidden';
+      nameSpan.style.whiteSpace = 'nowrap';
+      nameSpan.style.textOverflow = 'ellipsis';
+      nameSpan.textContent = f.name;
+
+      const rmBtn = document.createElement('button');
+      rmBtn.textContent = '×';
+      rmBtn.style.background = 'none';
+      rmBtn.style.border = 'none';
+      rmBtn.style.color = '#ff6b6b';
+      rmBtn.style.cursor = 'pointer';
+      rmBtn.style.fontSize = '12px';
+      rmBtn.style.padding = '0';
+      rmBtn.onclick = (e) => {
+        e.preventDefault();
+        currentFiles.splice(index, 1);
+        renderPreviews();
+      };
+
+      badge.appendChild(nameSpan);
+      badge.appendChild(rmBtn);
+      previewContainer.appendChild(badge);
+    });
+  }
 
   function handleFile(file) {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (e) => {
-      currentFile = {
+      currentFiles.push({
         name: file.name,
         type: file.type,
         data: e.target.result // Base64 Data URL
-      };
-      previewName.textContent = file.name;
-      previewContainer.style.display = 'flex';
-      // Reset file input value so the same file can be selected again if needed
-      if (fileInput.files[0] !== file) {
-        fileInput.value = '';
-      }
+      });
+      renderPreviews();
+      // Clear file input so same file can be uploaded again if removed
+      fileInput.value = '';
     };
     reader.readAsDataURL(file);
   }
@@ -76,47 +117,44 @@ document.addEventListener('DOMContentLoaded', () => {
 
   fileInput.addEventListener('change', () => {
     if (fileInput.files.length > 0) {
-      handleFile(fileInput.files[0]);
+      const newFiles = Array.from(fileInput.files);
+      newFiles.forEach(file => handleFile(file));
     }
   });
 
   // Paste Event Listener
   promptInput.addEventListener('paste', (e) => {
     const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+    let pastedFiles = false;
     for (let index in items) {
       const item = items[index];
       if (item.kind === 'file') {
         const file = item.getAsFile();
         handleFile(file);
-        e.preventDefault(); // Prevent pasting the binary data code into text area
-        return; // Handle only the first file found
+        pastedFiles = true;
       }
     }
-  });
-
-  removePreviewBtn.addEventListener('click', () => {
-    currentFile = null;
-    fileInput.value = '';
-    previewContainer.style.display = 'none';
+    if (pastedFiles) {
+        e.preventDefault(); // Prevent pasting the binary data code into text area
+    }
   });
 
   sendBtn.addEventListener('click', () => {
     const prompt = promptInput.value.trim();
-    if (!prompt && !currentFile) return;
+    if (!prompt && currentFiles.length === 0) return;
 
     // Reset UI immediately
     promptInput.value = '';
-    const fileToSend = currentFile; // Capture current ref
+    const filesToSend = [...currentFiles]; // Capture current ref
 
     // Clear attachment
-    currentFile = null;
-    fileInput.value = '';
-    previewContainer.style.display = 'none';
+    currentFiles = [];
+    renderPreviews();
 
     chrome.runtime.sendMessage({
       action: 'broadcast_prompt',
       prompt: prompt,
-      image: fileToSend
+      images: filesToSend
     });
   });
 

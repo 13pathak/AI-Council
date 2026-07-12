@@ -2,11 +2,11 @@ console.log('AI Bots: ChatGPT Script Loaded');
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === 'type_and_send') {
-        typeAndSend(message.prompt, message.image);
+        typeAndSend(message.prompt, message.images);
     }
 });
 
-async function typeAndSend(prompt, image) {
+async function typeAndSend(prompt, images) {
     // ChatGPT Input Selector
     const inputEl = document.querySelector('#prompt-textarea') ||
         document.querySelector('textarea') ||
@@ -15,14 +15,14 @@ async function typeAndSend(prompt, image) {
     if (inputEl) {
         inputEl.focus();
 
-        // 1. Upload Image (if any)
-        // 1. Upload Image (if any)
-        if (image) {
+        // 1. Upload Images (if any)
+        if (images && images.length > 0) {
             console.log('[AI Council] Attempting paste upload...');
-            await pasteImageToElement(inputEl, image);
-
-            // Wait a moment for upload to process (not perfect, but necessary)
-            await new Promise(r => setTimeout(r, 2000));
+            for (const img of images) {
+                await pasteImageToElement(inputEl, img);
+                // Wait a moment for upload to process (not perfect, but necessary)
+                await new Promise(r => setTimeout(r, 2000));
+            }
         }
 
         // 2. Type Prompt

@@ -31,14 +31,14 @@ chrome.action.onClicked.addListener(() => {
 // Message Handling
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === 'broadcast_prompt') {
-        broadcastToContentScripts(message.prompt, message.image);
+        broadcastToContentScripts(message.prompt, message.images);
     } else if (message.action === 'check_connection') {
         // Simple ack
         sendResponse({ status: 'Ready' });
     }
 });
 
-function broadcastToContentScripts(prompt, image) {
+function broadcastToContentScripts(prompt, images) {
     // Broadcast to all active tabs
     chrome.tabs.query({}, (tabs) => {
         tabs.forEach(tab => {
@@ -47,7 +47,7 @@ function broadcastToContentScripts(prompt, image) {
                 chrome.tabs.sendMessage(tab.id, {
                     action: 'type_and_send',
                     prompt: prompt,
-                    image: image
+                    images: images
                 });
             } catch (e) {
                 // Ignore errors for tabs that don't have content script
