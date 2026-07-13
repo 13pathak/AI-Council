@@ -1,3 +1,5 @@
+console.log('%c[AI Council] index.js v3.0 loaded', 'color: lime; font-size: 14px; font-weight: bold;');
+
 const BOT_URLS = {
   'chatgpt': 'https://chatgpt.com/',
   'claude': 'https://claude.ai/',
@@ -49,13 +51,32 @@ document.addEventListener('DOMContentLoaded', () => {
   const attachBtn = document.getElementById('attach-btn');
   const previewContainer = document.getElementById('preview-container');
 
+  // ====================================================================
+  // PERSISTENT FILE STORE — survives page re-initializations
+  // ====================================================================
   let currentFiles = [];
+
+  /** Save currentFiles to chrome.storage.local (without the heavy base64 data for the preview key) */
+  function persistFiles() {
+    // We store the full data under 'stagedFiles'
+    chrome.storage.local.set({ 'stagedFiles': currentFiles });
+  }
+
+  /** Restore currentFiles from chrome.storage.local on page load */
+  function restoreFiles(callback) {
+    chrome.storage.local.get(['stagedFiles'], (result) => {
+      if (result.stagedFiles && result.stagedFiles.length > 0) {
+        currentFiles = result.stagedFiles;
+        console.log('[AI Council] Restored', currentFiles.length, 'staged files from storage');
+      }
+      if (callback) callback();
+    });
+  }
 
   function renderPreviews() {
     previewContainer.innerHTML = '';
     if (currentFiles.length === 0) {
       previewContainer.style.display = 'none';
-      fileInput.value = '';
       return;
     }
     
@@ -88,6 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
       rmBtn.onclick = (e) => {
         e.preventDefault();
         currentFiles.splice(index, 1);
+        persistFiles();
         renderPreviews();
       };
 
@@ -97,23 +119,18 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function handleSingleFile(file) {
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      currentFiles.push({
-        name: file.name,
-        type: file.type,
-        data: e.target.result // Base64 Data URL
-      });
-      renderPreviews();
-    };
-    reader.readAsDataURL(file);
-  }
+  // Restore any previously staged files on page load, then render
+  restoreFiles(() => {
+    renderPreviews();
+  });
 
-  attachBtn.addEventListener('click', () => fileInput.click());
+  attachBtn.addEventListener('click', () => {
+    console.log('[AI Council] Attach clicked. Current files:', currentFiles.length);
+    fileInput.click();
+  });
 
   fileInput.addEventListener('change', () => {
+    console.log('[AI Council] File input changed. New files:', fileInput.files.length, 'Existing:', currentFiles.length);
     if (fileInput.files.length > 0) {
       const newFiles = Array.from(fileInput.files);
       let loadedCount = 0;
@@ -127,9 +144,11 @@ document.addEventListener('DOMContentLoaded', () => {
             data: e.target.result
           });
           loadedCount++;
+          console.log('[AI Council] Read file:', file.name, '— Total staged:', currentFiles.length);
           if (loadedCount === newFiles.length) {
+             persistFiles(); // Save to storage so they survive reloads
              renderPreviews();
-             fileInput.value = ''; // Clear after all are read
+             fileInput.value = ''; // Clear so same file can be re-selected
           }
         };
         reader.readAsDataURL(file);
@@ -145,7 +164,18 @@ document.addEventListener('DOMContentLoaded', () => {
       const item = items[i];
       if (item.kind === 'file') {
         const file = item.getAsFile();
-        handleSingleFile(file);
+        if (!file) continue;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          currentFiles.push({
+            name: file.name,
+            type: file.type,
+            data: ev.target.result
+          });
+          persistFiles();
+          renderPreviews();
+        };
+        reader.readAsDataURL(file);
         pastedFiles = true;
       }
     }
@@ -162,11 +192,12 @@ document.addEventListener('DOMContentLoaded', () => {
     promptInput.value = '';
     const filesToSend = [...currentFiles]; // Capture current ref
 
-    // Clear attachment
+    // Clear attachment state
     currentFiles = [];
+    persistFiles(); // Clear storage too
     renderPreviews();
 
-    // Store large files in local storage to bypass sendMessage size limits
+    // Store files for content scripts to pick up, then broadcast
     chrome.storage.local.set({ 'pendingImages': filesToSend }, () => {
       chrome.runtime.sendMessage({
         action: 'broadcast_prompt',
