@@ -314,7 +314,7 @@ function renderGrid(botIds) {
         if (CURRENT_VIEW === 'grid') {
           setMaximize(wrapper, maxBtn, true);
         }
-      }, 150); // 150ms delay for intentionality
+      }, 700); // 700ms delay for intentionality
     });
 
     wrapper.addEventListener('mouseleave', () => {
