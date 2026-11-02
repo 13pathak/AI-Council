@@ -1,8 +1,8 @@
 # AI Council
 
-A powerful Chrome extension that provides a unified split-screen interface to interact with multiple AI chatbots simultaneously.
+A Chrome extension for using multiple AI chatbots side by side in a split-screen interface.
 
-<img width="1921" height="935" alt="image" src="https://github.com/user-attachments/assets/7e074077-c36e-4094-8e43-d07262cd92a9" />
+<img width="1921" height="935" alt="AI Council showing four chatbot panels" src="https://github.com/user-attachments/assets/7e074077-c36e-4094-8e43-d07262cd92a9" />
 
 
 ## Features
@@ -24,7 +24,7 @@ A powerful Chrome extension that provides a unified split-screen interface to in
 - **Resizable Grid**: Drag the dividers to resize bot panels
 - **Global Prompt**: Send the same message to all bots simultaneously
 - **Configurable Slots**: Choose which 4 bots appear in your layout via Settings
-- **Restart All**: Clear all chats with a single button
+- **Restart All**: Reload all chatbot panels with a single button
 
 ## Installation
 
@@ -41,7 +41,7 @@ A powerful Chrome extension that provides a unified split-screen interface to in
 3. **Focus**: Click the ⛶ button on any bot to maximize it
 4. **Switch Views**: Use ⊞ for Grid View or ❐ for Tabbed View
 5. **Configure**: Click ⚙️ to select which bots appear in your layout
-6. **Restart**: Click 🗑️ to reload all bots and clear chats
+6. **Restart**: Click 🗑️ to reload all chatbot panels. This does not delete conversations stored by the AI services.
 
 ## Tech Stack
 
@@ -53,7 +53,7 @@ A powerful Chrome extension that provides a unified split-screen interface to in
 ## Project Structure
 
 ```
-AI Council/
+AI-Council/
 ├── manifest.json          # Extension configuration
 ├── icons/                 # Extension icons
 ├── src/
